@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Classroom Management</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════ -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">🎓</div>
+    <div class="brand-text">
+      <span class="brand-title">AI CLASSROOM</span>
+      <span class="brand-sub">Management System</span>
+    </div>
+  </div>
+
+  <ul class="nav-links">
+    <li><a href="#" class="nav-link active" data-page="dashboard">
+      <span class="nav-icon">⊞</span><span class="nav-label">Dashboard</span>
+    </a></li>
+    <li><a href="#" class="nav-link" data-page="live">
+      <span class="nav-icon">📹</span><span class="nav-label">Live Class</span>
+      <span class="nav-badge" id="live-badge" style="display:none">LIVE</span>
+    </a></li>
+    <li><a href="#" class="nav-link" data-page="history">
+      <span class="nav-icon">📋</span><span class="nav-label">Class History</span>
+    </a></li>
+    <li><a href="#" class="nav-link" data-page="students">
+      <span class="nav-icon">👥</span><span class="nav-label">Students</span>
+    </a></li>
+    <li><a href="#" class="nav-link" data-page="teachers">
+      <span class="nav-icon">👩‍🏫</span><span class="nav-label">Teachers</span>
+    </a></li>
+    <li><a href="#" class="nav-link" data-page="timetable">
+      <span class="nav-icon">🗓</span><span class="nav-label">Timetable</span>
+    </a></li>
+    <li><a href="#" class="nav-link" data-page="settings">
+      <span class="nav-icon">⚙</span><span class="nav-label">Settings</span>
+    </a></li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <div class="system-status">
+      <span class="status-dot" id="system-dot"></span>
+      <div class="system-info">
+        <span class="system-label">AI SYSTEM</span>
+        <span class="system-value" id="system-status-text">System Online</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════ -->
+<div class="main-wrapper">
+
+  <!-- TOP HEADER -->
+  <header class="top-header">
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <div class="header-left">
+      <h1 class="page-title" id="page-title">Dashboard</h1>
+      <span class="page-date" id="page-date"></span>
+    </div>
+    <div class="header-right">
+      <div class="header-period-info" id="header-period-info"></div>
+      <div class="header-status" id="header-status">
+        <span class="status-indicator idle" id="header-status-dot">●</span>
+        <span id="header-status-label">System Ready</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ─────── PAGE: DASHBOARD ─────── -->
+  <section class="page active" id="page-dashboard">
+    <div class="welcome-banner">
+      <div class="welcome-text">
+        <h2>Welcome to AI Classroom</h2>
+        <p>Real-time student monitoring, attendance tracking & behaviour detection</p>
+      </div>
+      <div class="welcome-actions">
+        <button class="btn btn-primary btn-lg" id="dash-start-btn" onclick="startDetection()">
+          ▶ START AI DETECTION
+        </button>
+        <button class="btn btn-danger btn-lg" id="dash-stop-btn" onclick="stopDetection()" style="display:none">
+          ■ STOP DETECTION
+        </button>
+      </div>
+    </div>
+
+    <!-- Current Class Info -->
+    <div class="info-strip" id="current-class-strip">
+      <div class="info-item">
+        <span class="info-label">Current Period</span>
+        <span class="info-value" id="dash-period">—</span>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-item">
+        <span class="info-label">Subject</span>
+        <span class="info-value" id="dash-subject">—</span>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-item">
+        <span class="info-label">Teacher</span>
+        <span class="info-value" id="dash-teacher">—</span>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-item">
+        <span class="info-label">Status</span>
+        <span class="info-value" id="dash-detection-status">
+          <span class="status-dot-sm idle"></span> Idle
+        </span>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">👥</div>
+        <div class="stat-body">
+          <div class="stat-number" id="stat-total">0</div>
+          <div class="stat-label">Total Students</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">✓</div>
+        <div class="stat-body">
+          <div class="stat-number green" id="stat-present">0</div>
+          <div class="stat-label">Present</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">✗</div>
+        <div class="stat-body">
+          <div class="stat-number red" id="stat-absent">0</div>
+          <div class="stat-label">Absent</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon yellow">💤</div>
+        <div class="stat-body">
+          <div class="stat-number yellow" id="stat-sleeping">0</div>
+          <div class="stat-label">Sleeping</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon orange">🍎</div>
+        <div class="stat-body">
+          <div class="stat-number orange" id="stat-eating">0</div>
+          <div class="stat-label">Eating</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon gray">?</div>
+        <div class="stat-body">
+          <div class="stat-number gray" id="stat-unknown">0</div>
+          <div class="stat-label">Unknown</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Classes -->
+    <div class="content-row">
+      <div class="card flex-2">
+        <div class="card-header">
+          <h3 class="card-title">📅 Today's Classes</h3>
+          <span class="card-badge" id="today-badge">Loading…</span>
+        </div>
+        <div class="card-body" id="today-classes-list">
+          <div class="loading-placeholder">Loading timetable…</div>
+        </div>
+      </div>
+
+      <div class="card flex-1">
+        <div class="card-header">
+          <h3 class="card-title">⚠ Live Alerts</h3>
+          <button class="card-btn" onclick="clearAlerts()">Clear</button>
+        </div>
+        <div class="alerts-list" id="dash-alerts-list">
+          <div class="no-alerts">No alerts yet</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── PAGE: LIVE CLASS ─────── -->
+  <section class="page" id="page-live">
+    <div class="live-header-bar">
+      <div class="live-header-info">
+        <div class="live-badge-big" id="live-badge-big">● LIVE</div>
+        <div class="live-class-details">
+          <h2 id="live-class-title">Current Class</h2>
+          <div class="live-meta" id="live-meta">No active class</div>
+        </div>
+      </div>
+      <div class="live-timer-block">
+        <div class="timer-label">Time Remaining</div>
+        <div class="timer-display" id="live-timer">--:--</div>
+      </div>
+      <div class="live-actions">
+        <button class="btn btn-primary" id="live-start-btn" onclick="startDetection()">▶ START</button>
+        <button class="btn btn-danger" id="live-stop-btn" onclick="stopDetection()" style="display:none">■ STOP</button>
+      </div>
+    </div>
+
+    <!-- Teacher verification -->
+    <div class="teacher-verify-bar" id="teacher-verify-bar" style="display:none">
+      <span class="verify-icon" id="verify-icon">⏳</span>
+      <span id="verify-text">Waiting for teacher verification…</span>
+    </div>
+
+    <!-- Live stats row -->
+    <div class="live-stats-row">
+      <div class="live-stat">
+        <div class="ls-num" id="ls-total">0</div>
+        <div class="ls-lbl">Total</div>
+      </div>
+      <div class="live-stat green">
+        <div class="ls-num" id="ls-present">0</div>
+        <div class="ls-lbl">Present</div>
+      </div>
+      <div class="live-stat red">
+        <div class="ls-num" id="ls-absent">0</div>
+        <div class="ls-lbl">Absent</div>
+      </div>
+      <div class="live-stat yellow">
+        <div class="ls-num" id="ls-sleeping">0</div>
+        <div class="ls-lbl">Sleeping</div>
+      </div>
+      <div class="live-stat orange">
+        <div class="ls-num" id="ls-eating">0</div>
+        <div class="ls-lbl">Eating</div>
+      </div>
+      <div class="live-stat gray">
+        <div class="ls-num" id="ls-unknown">0</div>
+        <div class="ls-lbl">Unknown</div>
+      </div>
+    </div>
+
+    <!-- Student table + Alerts -->
+    <div class="content-row">
+      <div class="card flex-2">
+        <div class="card-header">
+          <h3 class="card-title">👥 Live Student Monitoring</h3>
+          <span class="pulse-dot" id="live-pulse"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="live-student-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student Name</th>
+                <th>Attendance</th>
+                <th>Activity</th>
+                <th>First Seen</th>
+                <th>Last Seen</th>
+              </tr>
+            </thead>
+            <tbody id="live-student-tbody">
+              <tr><td colspan="6" class="empty-row">No active class. Start detection to begin.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card flex-1">
+        <div class="card-header">
+          <h3 class="card-title">⚠ Alerts</h3>
+          <button class="card-btn" onclick="clearAlerts()">Clear</button>
+        </div>
+        <div class="alerts-list" id="live-alerts-list">
+          <div class="no-alerts">No alerts</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── PAGE: CLASS HISTORY ─────── -->
+  <section class="page" id="page-history">
+    <div class="page-controls">
+      <div class="filter-bar">
+        <input type="date" class="filter-input" id="filter-date" placeholder="Filter by date" />
+        <select class="filter-input" id="filter-period">
+          <option value="">All Periods</option>
+          <option value="1">Period 1</option>
+          <option value="2">Period 2</option>
+          <option value="3">Period 3</option>
+          <option value="4">Period 4</option>
+          <option value="5">Period 5</option>
+          <option value="6">Period 6</option>
+          <option value="7">Period 7</option>
+        </select>
+        <input type="text" class="filter-input" id="filter-subject" placeholder="Subject…" />
+        <input type="text" class="filter-input" id="filter-teacher" placeholder="Teacher…" />
+        <button class="btn btn-primary btn-sm" onclick="loadHistory()">🔍 Filter</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕ Clear</button>
+      </div>
+    </div>
+
+    <div class="history-layout">
+      <!-- History list -->
+      <div class="history-list-panel" id="history-list-panel">
+        <div class="loading-placeholder" id="history-loading">Loading history…</div>
+        <div id="history-items"></div>
+      </div>
+
+      <!-- Detail panel -->
+      <div class="history-detail-panel" id="history-detail-panel">
+        <div class="detail-empty">
+          <div class="detail-empty-icon">📋</div>
+          <p>Select a class from the list to view details</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── PAGE: STUDENTS ─────── -->
+  <section class="page" id="page-students">
+    <div class="page-top-bar">
+      <h2 class="section-title">Registered Students</h2>
+      <button class="btn btn-primary" onclick="openRegisterModal('student')">
+        + Register Student
+      </button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table class="data-table" id="students-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>Face Samples</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="students-tbody">
+            <tr><td colspan="5" class="empty-row">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── PAGE: TEACHERS ─────── -->
+  <section class="page" id="page-teachers">
+    <div class="page-top-bar">
+      <h2 class="section-title">Teachers</h2>
+      <span style="font-size:12px;color:var(--text-muted);">
+        ✓ Teachers are taken from the Timetable — no face registration needed.
+      </span>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table class="data-table" id="teachers-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Teacher Name</th>
+              <th>Subject(s)</th>
+              <th>Periods</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="teachers-tbody">
+            <tr><td colspan="5" class="empty-row">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── PAGE: TIMETABLE ─────── -->
+  <section class="page" id="page-timetable">
+    <div class="page-top-bar">
+      <h2 class="section-title">Class Timetable</h2>
+      <div class="btn-group">
+        <button class="btn btn-ghost" onclick="addPeriodRow()">+ Add Period</button>
+        <button class="btn btn-primary" onclick="saveTimetable()">💾 Save Timetable</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table class="data-table" id="timetable-table">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Subject</th>
+              <th>Teacher (Key)</th>
+              <th>Teacher (Display)</th>
+              <th>Start Time</th>
+              <th>End Time</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="timetable-tbody">
+            <tr><td colspan="7" class="empty-row">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="hint-text">
+      💡 Teacher Key = folder name in <code>teacher_faces/</code> (e.g. <code>Maths_Sir</code>).
+      Teacher Display = name shown on dashboard.
+    </p>
+  </section>
+
+  <!-- ─────── PAGE: SETTINGS ─────── -->
+  <section class="page" id="page-settings">
+    <div class="page-top-bar">
+      <h2 class="section-title">Settings</h2>
+    </div>
+    <div class="settings-grid">
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">⏱ Detection Settings</h3></div>
+        <div class="card-body">
+          <div class="setting-row">
+            <label class="setting-label">Class Duration (minutes)</label>
+            <input type="number" class="setting-input" id="setting-duration" value="60" min="5" max="180" />
+          </div>
+          <div class="setting-row">
+            <label class="setting-label">Recognition Threshold (0–1)</label>
+            <input type="number" class="setting-input" id="setting-threshold" value="0.72" min="0.5" max="0.99" step="0.01" />
+          </div>
+          <div class="setting-row">
+            <label class="setting-label">Sleep Detection (frames)</label>
+            <input type="number" class="setting-input" id="setting-sleep-frames" value="45" min="10" max="200" />
+          </div>
+          <div class="setting-row">
+            <label class="setting-label">Eat Detection (frames)</label>
+            <input type="number" class="setting-input" id="setting-eat-frames" value="30" min="10" max="150" />
+          </div>
+          <div class="setting-row">
+            <label class="setting-label">Buzzer Cooldown (seconds)</label>
+            <input type="number" class="setting-input" id="setting-buzzer-cd" value="30" min="5" max="300" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">🗄 Data Management</h3></div>
+        <div class="card-body">
+          <div class="setting-row">
+            <label class="setting-label">Class History</label>
+            <button class="btn btn-danger btn-sm" onclick="confirmClearHistory()">
+              🗑 Clear All History
+            </button>
+          </div>
+          <div class="setting-row">
+            <label class="setting-label">Export Attendance Log</label>
+            <a class="btn btn-ghost btn-sm" href="/download/attendance" download>
+              ⬇ Download attendance.txt
+            </a>
+          </div>
+          <div class="setting-row">
+            <label class="setting-label">System Health</label>
+            <button class="btn btn-ghost btn-sm" onclick="checkHealth()">🔍 Check</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">ℹ About</h3></div>
+        <div class="card-body">
+          <div class="about-info">
+            <div class="about-row"><span>System</span><span>AI Classroom Management v1.0</span></div>
+            <div class="about-row"><span>Engine</span><span>OpenCV + MediaPipe</span></div>
+            <div class="about-row"><span>Server</span><span>Flask (Python)</span></div>
+            <div class="about-row"><span>Platform</span><span>Windows (local)</span></div>
+            <div class="about-row"><span>Buzzer</span><span>winsound</span></div>
+            <div class="about-row"><span>Storage</span><span>JSON files</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /main-wrapper -->
+
+<!-- ═══════════════════════════════════════
+     MODALS
+════════════════════════════════════════ -->
+
+<!-- Register Modal -->
+<div class="modal-overlay" id="register-modal" onclick="closeModal('register-modal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="register-modal-title">Register Person</h3>
+      <button class="modal-close" onclick="closeModal('register-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-input" id="register-name"
+               placeholder="e.g. Rahul Kumar" />
+        <p class="form-hint" id="register-hint">
+          Name will become the folder name. Use letters, numbers, spaces.
+        </p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Number of face images to capture</label>
+        <input type="number" class="form-input" id="register-num-images"
+               value="5" min="3" max="20" />
+      </div>
+      <div class="modal-info-box">
+        <p>📷 A camera window will open. Face the camera while images are captured.</p>
+        <p>Press <strong>Q</strong> in the camera window to cancel early.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('register-modal')">Cancel</button>
+      <button class="btn btn-primary" id="register-submit-btn" onclick="submitRegistration()">
+        📷 Open Camera & Register
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirm-modal" onclick="closeModal('confirm-modal')">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="confirm-title">Confirm Action</h3>
+      <button class="modal-close" onclick="closeModal('confirm-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message">Are you sure?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Class Detail Modal -->
+<div class="modal-overlay" id="detail-modal" onclick="closeModal('detail-modal')">
+  <div class="modal modal-lg" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="detail-modal-title">Class Details</h3>
+      <button class="modal-close" onclick="closeModal('detail-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="detail-modal-body">
+      Loading…
+    </div>
+  </div>
+</div>
+
+<!-- Period Select Modal -->
+<div class="modal-overlay" id="period-modal" onclick="closeModal('period-modal')">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Select Period</h3>
+      <button class="modal-close" onclick="closeModal('period-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Period</label>
+        <select class="form-input" id="period-select"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Duration (minutes)</label>
+        <input type="number" class="form-input" id="period-duration" value="60" min="5" max="180" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('period-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmStartDetection()">▶ Start Detection</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+// ─────────────────────────────────────────
+//  State
+// ─────────────────────────────────────────
+let currentPage    = 'dashboard';
+let liveStatus     = {};
+let pollInterval   = null;
+let registerType   = 'student';
+let timetableData  = [];
+let _alertsSeen    = new Set();
+
+// ─────────────────────────────────────────
+//  Navigation
+// ─────────────────────────────────────────
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const page = link.dataset.page;
+    navigateTo(page);
+  });
+});
+
+function navigateTo(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-link').forEach(l =>
+    l.classList.toggle('active', l.dataset.page === page));
+  document.querySelectorAll('.page').forEach(p =>
+    p.classList.toggle('active', p.id === `page-${page}`));
+
+  const titles = {
+    dashboard: 'Dashboard', live: 'Live Class',
+    history: 'Class History', students: 'Students',
+    teachers: 'Teachers', timetable: 'Timetable', settings: 'Settings'
+  };
+  document.getElementById('page-title').textContent = titles[page] || page;
+
+  if (page === 'history')   loadHistory();
+  if (page === 'students')  loadStudents();
+  if (page === 'teachers')  loadTeachers();
+  if (page === 'timetable') loadTimetable();
+}
+
+document.getElementById('menu-toggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
+
+// ─────────────────────────────────────────
+//  Date / header
+// ─────────────────────────────────────────
+function updateDate() {
+  const now = new Date();
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  document.getElementById('page-date').textContent = now.toLocaleDateString('en-IN', opts);
+}
+updateDate();
+
+// ─────────────────────────────────────────
+//  Live Polling
+// ─────────────────────────────────────────
+function startPolling() {
+  if (pollInterval) return;
+  pollInterval = setInterval(fetchStatus, 1000);
+}
+function stopPolling() {
+  if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+}
+
+async function fetchStatus() {
+  try {
+    const res = await fetch('/status');
+    if (!res.ok) return;
+    liveStatus = await res.json();
+    updateAllUI(liveStatus);
+  } catch(e) {
+    // Silent – server may be restarting
+  }
+}
+startPolling();
+
+// ─────────────────────────────────────────
+//  Update all UI from status
+// ─────────────────────────────────────────
+function updateAllUI(s) {
+  const running = s.running;
+
+  // Live badge in sidebar
+  const liveBadge = document.getElementById('live-badge');
+  if (liveBadge) liveBadge.style.display = running ? 'inline-flex' : 'none';
+
+  // Header status
+  const dot   = document.getElementById('header-status-dot');
+  const label = document.getElementById('header-status-label');
+  if (running) {
+    dot.className   = 'status-indicator active';
+    label.textContent = `● AI Detection Running — Period ${s.period} ${s.subject}`;
+  } else {
+    dot.className   = 'status-indicator idle';
+    label.textContent = 'System Ready';
+  }
+
+  // System status footer
+  const sysDot  = document.getElementById('system-dot');
+  const sysText = document.getElementById('system-status-text');
+  sysDot.className  = running ? 'status-dot active' : 'status-dot';
+  sysText.textContent = running ? 'Detection Active' : 'System Online';
+
+  // Header period info
+  const hpi = document.getElementById('header-period-info');
+  if (running) {
+    hpi.innerHTML = `<span class="hpi-period">P${s.period}</span>
+                     <span class="hpi-subject">${s.subject}</span>`;
+  } else {
+    const cp = s.current_period_info;
+    if (cp) {
+      hpi.innerHTML = `<span class="hpi-period">P${cp.period}</span>
+                       <span class="hpi-subject">${cp.subject}</span>`;
+    } else {
+      hpi.innerHTML = '';
+    }
+  }
+
+  // ── Dashboard ──
+  updateDashboardStats(s);
+  updateDashboardAlerts(s.alerts || []);
+  updateDashboardButtons(running);
+  updateDashboardPeriodInfo(s);
+
+  // ── Live page ──
+  updateLivePage(s);
+}
+
+function updateDashboardStats(s) {
+  setText('stat-total',    s.total_students || 0);
+  setText('stat-present',  s.present        || 0);
+  setText('stat-absent',   s.absent         || 0);
+  setText('stat-sleeping', s.sleeping       || 0);
+  setText('stat-eating',   s.eating         || 0);
+  setText('stat-unknown',  s.unknown        || 0);
+}
+
+function updateDashboardPeriodInfo(s) {
+  const running = s.running;
+  const cp = running ? s : (s.current_period_info || null);
+
+  if (cp) {
+    setText('dash-period',  `Period ${cp.period}`);
+    setText('dash-subject', cp.subject   || '—');
+    setText('dash-teacher', running ? (s.teacher || '—') : (cp.teacher_display || cp.teacher || '—'));
+  } else {
+    setText('dash-period',  '—');
+    setText('dash-subject', '—');
+    setText('dash-teacher', '—');
+  }
+
+  const dsEl = document.getElementById('dash-detection-status');
+  if (dsEl) {
+    dsEl.innerHTML = running
+      ? '<span class="status-dot-sm active"></span> AI Detection Running'
+      : '<span class="status-dot-sm idle"></span> Idle';
+  }
+}
+
+function updateDashboardButtons(running) {
+  setDisplay('dash-start-btn', !running);
+  setDisplay('dash-stop-btn',   running);
+}
+
+function updateDashboardAlerts(alerts) {
+  renderAlerts('dash-alerts-list', alerts);
+}
+
+function updateLivePage(s) {
+  const running = s.running;
+
+  // Timer
+  const timerEl = document.getElementById('live-timer');
+  if (timerEl) {
+    if (running && s.remaining_seconds !== undefined) {
+      const m = Math.floor(s.remaining_seconds / 60);
+      const sec = s.remaining_seconds % 60;
+      timerEl.textContent = `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+      timerEl.className   = s.remaining_seconds < 600 ? 'timer-display urgent' : 'timer-display';
+    } else {
+      timerEl.textContent = '--:--';
+      timerEl.className   = 'timer-display';
+    }
+  }
+
+  // Class title / meta
+  const titleEl = document.getElementById('live-class-title');
+  const metaEl  = document.getElementById('live-meta');
+  if (running) {
+    if (titleEl) titleEl.textContent = `Period ${s.period} — ${s.subject}`;
+    if (metaEl)  metaEl.textContent  = `${s.teacher || ''}  |  ${s.start_time || ''} – ${s.end_time || ''}`;
+  } else {
+    if (titleEl) titleEl.textContent = 'No Active Class';
+    if (metaEl)  metaEl.textContent  = 'Start detection to begin a class session.';
+  }
+
+  // Live badge
+  const lbb = document.getElementById('live-badge-big');
+  if (lbb) {
+    lbb.className = running ? 'live-badge-big active' : 'live-badge-big idle';
+    lbb.textContent = running ? '● LIVE' : '○ IDLE';
+  }
+
+  // Teacher verification
+  const tvBar = document.getElementById('teacher-verify-bar');
+  if (tvBar) {
+    tvBar.style.display = running ? 'flex' : 'none';
+    const icon = document.getElementById('verify-icon');
+    const text = document.getElementById('verify-text');
+    if (s.teacher_verified) {
+      icon.textContent = '✓';
+      tvBar.className  = 'teacher-verify-bar verified';
+      text.textContent = `Teacher Verified: ${s.teacher}`;
+    } else {
+      icon.textContent = '⏳';
+      tvBar.className  = 'teacher-verify-bar waiting';
+      text.textContent = 'Waiting for teacher verification…';
+    }
+  }
+
+  // Live stats
+  setText('ls-total',    s.total_students || 0);
+  setText('ls-present',  s.present        || 0);
+  setText('ls-absent',   s.absent         || 0);
+  setText('ls-sleeping', s.sleeping       || 0);
+  setText('ls-eating',   s.eating         || 0);
+  setText('ls-unknown',  s.unknown        || 0);
+
+  // Live pulse dot
+  const pulse = document.getElementById('live-pulse');
+  if (pulse) pulse.style.display = running ? 'inline-block' : 'none';
+
+  // Buttons
+  setDisplay('live-start-btn', !running);
+  setDisplay('live-stop-btn',   running);
+
+  // Student table
+  updateLiveStudentTable(s.students || {}, running);
+
+  // Alerts
+  renderAlerts('live-alerts-list', s.alerts || []);
+
+  // New alert toasts
+  triggerNewAlertToasts(s.alerts || []);
+}
+
+function updateLiveStudentTable(students, running) {
+  const tbody = document.getElementById('live-student-tbody');
+  if (!tbody) return;
+
+  const entries = Object.entries(students).filter(([k]) => k !== '__unknown__');
+  if (!running || entries.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-row">
+      ${running ? 'Waiting for faces to appear…' : 'No active class. Start detection to begin.'}
+    </td></tr>`;
+    return;
+  }
+
+  entries.sort((a, b) => {
+    const order = { SLEEPING:0, EATING:1, PRESENT:2, ABSENT:3 };
+    return (order[a[1].activity] ?? 4) - (order[b[1].activity] ?? 4);
+  });
+
+  tbody.innerHTML = entries.map(([name, info], idx) => {
+    const status   = info.status   || 'ABSENT';
+    const activity = info.activity || 'ABSENT';
+    return `<tr class="student-row ${activityClass(activity)}">
+      <td>${idx + 1}</td>
+      <td class="student-name">${name}</td>
+      <td><span class="badge badge-${status.toLowerCase()}">${status}</span></td>
+      <td><span class="badge badge-${activityClass(activity)}">${activity}</span></td>
+      <td class="time-cell">${info.first_seen || '—'}</td>
+      <td class="time-cell">${info.last_seen  || '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function activityClass(a) {
+  const m = { PRESENT:'present', ABSENT:'absent', SLEEPING:'sleeping', EATING:'eating', UNKNOWN:'unknown' };
+  return m[a] || 'unknown';
+}
+
+function renderAlerts(containerId, alerts) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!alerts || alerts.length === 0) {
+    el.innerHTML = '<div class="no-alerts">No alerts</div>';
+    return;
+  }
+  el.innerHTML = alerts.slice(0, 15).map(a => `
+    <div class="alert-item ${a.type === 'SLEEPING' ? 'alert-sleep' : 'alert-eat'}">
+      <div class="alert-icon">${a.type === 'SLEEPING' ? '💤' : '🍎'}</div>
+      <div class="alert-body">
+        <div class="alert-type">${a.type === 'SLEEPING' ? 'Sleeping Detected' : 'Eating Detected'}</div>
+        <div class="alert-student">${a.student}</div>
+        <div class="alert-time">${a.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function triggerNewAlertToasts(alerts) {
+  if (!alerts) return;
+  alerts.slice(0, 3).forEach(a => {
+    const key = `${a.type}-${a.student}-${a.time}`;
+    if (!_alertsSeen.has(key)) {
+      _alertsSeen.add(key);
+      const icon = a.type === 'SLEEPING' ? '💤' : '🍎';
+      showToast(`${icon} ${a.type} detected — ${a.student}`, 'warning', 4000);
+    }
+  });
+}
+
+function clearAlerts() {
+  _alertsSeen.clear();
+  renderAlerts('dash-alerts-list', []);
+  renderAlerts('live-alerts-list', []);
+}
+
+// ─────────────────────────────────────────
+//  Today's classes on dashboard
+// ─────────────────────────────────────────
+async function loadDashboardClasses() {
+  try {
+    const [ttRes, histRes] = await Promise.all([
+      fetch('/timetable'), fetch('/history')
+    ]);
+    const tt   = await ttRes.json();
+    const hist = await histRes.json();
+    const today = new Date().toISOString().split('T')[0];
+    const todayClasses = (hist.classes || []).filter(c => c.date === today);
+    const completedIds = new Set(todayClasses.map(c => c.class_id));
+
+    const container = document.getElementById('today-classes-list');
+    const badge     = document.getElementById('today-badge');
+    const periods   = tt.periods || [];
+
+    badge.textContent = `${periods.length} periods today`;
+
+    if (periods.length === 0) {
+      container.innerHTML = '<div class="empty-row">No timetable configured.</div>';
+      return;
+    }
+
+    container.innerHTML = periods.map(p => {
+      const cid = `${today}_period_${p.period}`;
+      const done = completedIds.has(cid);
+      const hist_entry = todayClasses.find(c => c.class_id === cid);
+      const statusBadge = done
+        ? `<span class="badge badge-present">✓ Completed</span>`
+        : (liveStatus.running && String(liveStatus.period) === String(p.period)
+            ? `<span class="badge badge-active">● LIVE</span>`
+            : `<span class="badge badge-absent">Upcoming</span>`);
+
+      const stats = done && hist_entry
+        ? `<span class="tday-stats">${hist_entry.present}P / ${hist_entry.absent}A</span>`
+        : '';
+
+      return `<div class="today-class-row" onclick="${done ? `showHistoryDetail('${cid}')` : 'navigateTo(\"live\")'}">
+        <div class="tday-period">P${p.period}</div>
+        <div class="tday-info">
+          <div class="tday-subject">${p.subject}</div>
+          <div class="tday-teacher">${p.teacher_display || p.teacher}</div>
+        </div>
+        <div class="tday-time">${p.start_time}–${p.end_time}</div>
+        ${stats}
+        ${statusBadge}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('today-classes-list').innerHTML =
+      '<div class="empty-row">Could not load timetable.</div>';
+  }
+}
+loadDashboardClasses();
+setInterval(loadDashboardClasses, 15000);
+
+// ─────────────────────────────────────────
+//  Start / Stop Detection
+// ─────────────────────────────────────────
+async function startDetection() {
+  // Load timetable and show period picker
+  try {
+    const res = await fetch('/timetable');
+    const tt  = await res.json();
+    timetableData = tt.periods || [];
+
+    if (timetableData.length === 0) {
+      showToast('No timetable configured. Go to Timetable page first.', 'error');
+      return;
+    }
+
+    const sel = document.getElementById('period-select');
+    sel.innerHTML = timetableData.map(p =>
+      `<option value="${p.period}">${p.period}. ${p.subject} — ${p.teacher_display || p.teacher} (${p.start_time}–${p.end_time})</option>`
+    ).join('');
+
+    // Pre-select current period
+    if (liveStatus.current_period_info) {
+      sel.value = liveStatus.current_period_info.period;
+    }
+
+    openModal('period-modal');
+  } catch(e) {
+    showToast('Could not load timetable.', 'error');
+  }
+}
+
+async function confirmStartDetection() {
+  closeModal('period-modal');
+  const periodNum = document.getElementById('period-select').value;
+  const durationMin = parseInt(document.getElementById('period-duration').value) || 60;
+
+  showToast('Starting AI detection…', 'info');
+
+  try {
+    const res = await fetch('/start-detection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        period: periodNum,
+        duration_seconds: durationMin * 60
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, 'success');
+      navigateTo('live');
+    } else {
+      showToast(data.error || 'Failed to start detection.', 'error');
+    }
+  } catch(e) {
+    showToast('Server error. Is web.py running?', 'error');
+  }
+}
+
+async function stopDetection() {
+  showConfirm('Stop Detection', 'Stop the current class and save attendance?', async () => {
+    try {
+      const res = await fetch('/stop-detection', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message, 'success');
+      } else {
+        showToast(data.error || 'Could not stop detection.', 'error');
+      }
+    } catch(e) {
+      showToast('Server error.', 'error');
+    }
+  });
+}
+
+// ─────────────────────────────────────────
+//  History
+// ─────────────────────────────────────────
+async function loadHistory() {
+  const dateF    = document.getElementById('filter-date').value;
+  const periodF  = document.getElementById('filter-period').value;
+  const subjectF = document.getElementById('filter-subject').value;
+  const teacherF = document.getElementById('filter-teacher').value;
+
+  const params = new URLSearchParams();
+  if (dateF)    params.set('date',    dateF);
+  if (periodF)  params.set('period',  periodF);
+  if (subjectF) params.set('subject', subjectF);
+  if (teacherF) params.set('teacher', teacherF);
+
+  document.getElementById('history-loading').style.display = 'block';
+  document.getElementById('history-items').innerHTML = '';
+
+  try {
+    const res  = await fetch(`/history?${params}`);
+    const data = await res.json();
+    document.getElementById('history-loading').style.display = 'none';
+    renderHistoryList(data.classes || []);
+  } catch(e) {
+    document.getElementById('history-loading').innerHTML =
+      '<div class="error-msg">Could not load history.</div>';
+  }
+}
+
+function renderHistoryList(classes) {
+  const container = document.getElementById('history-items');
+  if (classes.length === 0) {
+    container.innerHTML = `<div class="empty-history">
+      <div class="eh-icon">📋</div>
+      <p>No class records found.</p>
+    </div>`;
+    return;
+  }
+
+  // Group by date
+  const grouped = {};
+  classes.forEach(c => {
+    const d = c.date || 'Unknown';
+    if (!grouped[d]) grouped[d] = [];
+    grouped[d].push(c);
+  });
+
+  container.innerHTML = Object.entries(grouped).map(([date, items]) => {
+    const label = formatDateLabel(date);
+    return `<div class="hist-date-group">
+      <div class="hist-date-label">${label}</div>
+      ${items.map(c => `
+        <div class="hist-card" onclick="showHistoryDetail('${c.class_id}')">
+          <div class="hist-period-badge">P${c.period}</div>
+          <div class="hist-info">
+            <div class="hist-subject">${c.subject}</div>
+            <div class="hist-teacher">${c.teacher}</div>
+            <div class="hist-time">${c.start_time} – ${c.end_time}</div>
+          </div>
+          <div class="hist-stats">
+            <span class="hs-present">${c.present} Present</span>
+            <span class="hs-absent">${c.absent} Absent</span>
+            ${c.sleeping > 0 ? `<span class="hs-sleep">💤 ${c.sleeping}</span>` : ''}
+            ${c.eating   > 0 ? `<span class="hs-eat">🍎 ${c.eating}</span>`   : ''}
+          </div>
+          <div class="hist-status">
+            <span class="badge badge-present">Completed</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+  }).join('');
+}
+
+function formatDateLabel(dateStr) {
+  if (!dateStr || dateStr === 'Unknown') return 'Unknown Date';
+  const today = new Date().toISOString().split('T')[0];
+  const yest  = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  if (dateStr === today) return 'TODAY';
+  if (dateStr === yest)  return 'YESTERDAY';
+  try {
+    return new Date(dateStr).toLocaleDateString('en-IN',
+      { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  } catch { return dateStr; }
+}
+
+async function showHistoryDetail(classId) {
+  openModal('detail-modal');
+  document.getElementById('detail-modal-body').innerHTML = '<div class="loading-placeholder">Loading…</div>';
+  document.getElementById('detail-modal-title').textContent = 'Class Details';
+
+  try {
+    const res  = await fetch(`/history/${classId}`);
+    if (!res.ok) {
+      document.getElementById('detail-modal-body').innerHTML = '<div class="error-msg">Class not found.</div>';
+      return;
+    }
+    const c = await res.json();
+    renderClassDetail(c);
+  } catch(e) {
+    document.getElementById('detail-modal-body').innerHTML = '<div class="error-msg">Could not load details.</div>';
+  }
+}
+
+function renderClassDetail(c) {
+  document.getElementById('detail-modal-title').textContent =
+    `Period ${c.period} — ${c.subject}`;
+
+  const students = c.students || {};
+  const studentRows = Object.entries(students)
+    .filter(([k]) => k !== '__unknown__')
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([name, info], idx) => {
+      const status   = info.status   || 'ABSENT';
+      const activity = info.activity || 'ABSENT';
+      return `<tr>
+        <td>${idx+1}</td>
+        <td>${name}</td>
+        <td><span class="badge badge-${status.toLowerCase()}">${status}</span></td>
+        <td><span class="badge badge-${activityClass(activity)}">${activity}</span></td>
+        <td class="time-cell">${info.first_seen || '—'}</td>
+      </tr>`;
+    }).join('');
+
+  const alerts = (c.alerts || []).slice(0, 10).map(a => `
+    <div class="alert-item ${a.type === 'SLEEPING' ? 'alert-sleep' : 'alert-eat'}">
+      <div class="alert-icon">${a.type === 'SLEEPING' ? '💤' : '🍎'}</div>
+      <div class="alert-body">
+        <div class="alert-type">${a.type}</div>
+        <div class="alert-student">${a.student}</div>
+        <div class="alert-time">${a.time}</div>
+      </div>
+    </div>
+  `).join('') || '<div class="no-alerts">No incidents recorded.</div>';
+
+  const dateFormatted = (() => {
+    try {
+      return new Date(c.date).toLocaleDateString('en-IN',
+        { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    } catch { return c.date; }
+  })();
+
+  document.getElementById('detail-modal-body').innerHTML = `
+    <div class="detail-view">
+      <div class="detail-meta-grid">
+        <div class="dm-item"><span class="dm-label">Date</span><span class="dm-val">${dateFormatted}</span></div>
+        <div class="dm-item"><span class="dm-label">Period</span><span class="dm-val">${c.period}</span></div>
+        <div class="dm-item"><span class="dm-label">Subject</span><span class="dm-val">${c.subject}</span></div>
+        <div class="dm-item"><span class="dm-label">Teacher</span><span class="dm-val">${c.teacher}</span></div>
+        <div class="dm-item"><span class="dm-label">Time</span><span class="dm-val">${c.start_time} – ${c.end_time}</span></div>
+        <div class="dm-item"><span class="dm-label">Total Students</span><span class="dm-val">${c.total_students}</span></div>
+        <div class="dm-item"><span class="dm-label">Present</span><span class="dm-val green">${c.present}</span></div>
+        <div class="dm-item"><span class="dm-label">Absent</span><span class="dm-val red">${c.absent}</span></div>
+        <div class="dm-item"><span class="dm-label">Sleeping</span><span class="dm-val yellow">${c.sleeping}</span></div>
+        <div class="dm-item"><span class="dm-label">Eating</span><span class="dm-val orange">${c.eating}</span></div>
+        <div class="dm-item"><span class="dm-label">Teacher Verified</span>
+          <span class="dm-val">${c.teacher_verified ? '✓ Yes' : '✗ No'}</span></div>
+      </div>
+
+      <h4 class="detail-section-title">Student Attendance</h4>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Student</th><th>Status</th><th>Activity</th><th>First Seen</th></tr></thead>
+          <tbody>${studentRows || '<tr><td colspan="5" class="empty-row">No students recorded.</td></tr>'}</tbody>
+        </table>
+      </div>
+
+      <h4 class="detail-section-title">Activity Incidents</h4>
+      <div class="detail-alerts">${alerts}</div>
+    </div>
+  `;
+}
+
+function clearFilters() {
+  document.getElementById('filter-date').value    = '';
+  document.getElementById('filter-period').value  = '';
+  document.getElementById('filter-subject').value = '';
+  document.getElementById('filter-teacher').value = '';
+  loadHistory();
+}
+
+// ─────────────────────────────────────────
+//  Students
+// ─────────────────────────────────────────
+async function loadStudents() {
+  try {
+    const res  = await fetch('/students');
+    const data = await res.json();
+    const tbody = document.getElementById('students-tbody');
+    const students = data.students || [];
+    if (students.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-row">No students registered yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = students.map((s, i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td class="student-name">${s.name}</td>
+        <td>${s.samples} sample${s.samples !== 1 ? 's' : ''}</td>
+        <td><span class="badge badge-present">✓ Registered</span></td>
+        <td>
+          <button class="btn btn-danger btn-xs" onclick="deleteStudent('${s.name}')">
+            🗑 Remove
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) {
+    document.getElementById('students-tbody').innerHTML =
+      '<tr><td colspan="5" class="empty-row">Could not load students.</td></tr>';
+  }
+}
+
+async function deleteStudent(name) {
+  showConfirm('Remove Student',
+    `Remove "${name}" and all their face images? This cannot be undone.`,
+    async () => {
+      try {
+        const res  = await fetch(`/students/${encodeURIComponent(name)}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          loadStudents();
+        } else {
+          showToast(data.error, 'error');
+        }
+      } catch(e) {
+        showToast('Server error.', 'error');
+      }
+    });
+}
+
+// ─────────────────────────────────────────
+//  Teachers
+// ─────────────────────────────────────────
+async function loadTeachers() {
+  try {
+    const res = await fetch('/timetable');
+    const tt  = await res.json();
+    const tbody = document.getElementById('teachers-tbody');
+    const periods = tt.periods || [];
+
+    if (periods.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-row">No timetable configured. Go to Timetable page.</td></tr>';
+      return;
+    }
+
+    // Group by teacher
+    const teacherMap = {};
+    periods.forEach(p => {
+      const key = p.teacher_display || p.teacher;
+      if (!teacherMap[key]) {
+        teacherMap[key] = { name: key, subjects: new Set(), periods: [] };
+      }
+      teacherMap[key].subjects.add(p.subject);
+      teacherMap[key].periods.push(p.period);
+    });
+
+    tbody.innerHTML = Object.values(teacherMap).map((t, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td class="student-name">${t.name}</td>
+        <td>${[...t.subjects].join(', ')}</td>
+        <td>${t.periods.map(p => `P${p}`).join(', ')}</td>
+        <td><span class="badge badge-present">✓ From Timetable</span></td>
+      </tr>
+    `).join('');
+  } catch(e) {
+    document.getElementById('teachers-tbody').innerHTML =
+      '<tr><td colspan="5" class="empty-row">Could not load teachers.</td></tr>';
+  }
+}
+
+async function deleteTeacher(name) {
+  showConfirm('Remove Teacher',
+    `Remove "${name}" and all their face images?`,
+    async () => {
+      try {
+        const res  = await fetch(`/teachers/${encodeURIComponent(name)}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          loadTeachers();
+        } else {
+          showToast(data.error, 'error');
+        }
+      } catch(e) {
+        showToast('Server error.', 'error');
+      }
+    });
+}
+
+// ─────────────────────────────────────────
+//  Registration Modal
+// ─────────────────────────────────────────
+function openRegisterModal(type) {
+  registerType = type;
+  const title = type === 'student' ? 'Register Student' : 'Register Teacher';
+  document.getElementById('register-modal-title').textContent = title;
+  document.getElementById('register-name').value = '';
+  document.getElementById('register-hint').textContent =
+    type === 'student'
+      ? 'Name will become the folder in student_faces/. Example: Rahul_Kumar'
+      : 'Name will become the folder in teacher_faces/. Example: Maths_Sir';
+  openModal('register-modal');
+}
+
+async function submitRegistration() {
+  const name = document.getElementById('register-name').value.trim();
+  const num  = parseInt(document.getElementById('register-num-images').value) || 5;
+
+  if (!name) {
+    showToast('Please enter a name.', 'error');
+    return;
+  }
+
+  closeModal('register-modal');
+
+  const endpoint = registerType === 'student' ? '/students/register' : '/teachers/register';
+
+  // Step 1 — start the job (instant response)
+  let jobId = null;
+  try {
+    const res  = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, num_images: num })
+    });
+    const data = await res.json();
+    if (!data.success) {
+      showToast(data.error || 'Failed to start registration.', 'error');
+      return;
+    }
+    jobId = data.job_id;
+    showToast(`📷 Camera opening for "${name}" — look at the camera window on your screen.`, 'info', 8000);
+  } catch(e) {
+    showToast('Server error starting registration.', 'error');
+    return;
+  }
+
+  // Step 2 — poll until done or error
+  let attempts = 0;
+  const poll = setInterval(async () => {
+    attempts++;
+    if (attempts > 120) {   // 2 min max
+      clearInterval(poll);
+      showToast('Registration timed out. Try again.', 'error');
+      return;
+    }
+    try {
+      const res  = await fetch(`/registration-status/${jobId}`);
+      const s    = await res.json();
+
+      if (s.status === 'done') {
+        clearInterval(poll);
+        showToast(`✓ Registered "${name}" with ${s.saved} face images!`, 'success', 5000);
+        if (registerType === 'student') loadStudents();
+        else loadTeachers();
+      } else if (s.status === 'error') {
+        clearInterval(poll);
+        showToast(`Registration failed: ${s.error}`, 'error', 6000);
+      } else if (s.status === 'running' && s.saved > 0) {
+        showToast(`📷 Capturing... ${s.saved}/${s.total} images`, 'info', 1500);
+      }
+    } catch(e) {
+      // ignore transient poll errors
+    }
+  }, 1000);
+}
+
+// ─────────────────────────────────────────
+//  Timetable
+// ─────────────────────────────────────────
+async function loadTimetable() {
+  try {
+    const res = await fetch('/timetable');
+    const tt  = await res.json();
+    timetableData = tt.periods || [];
+    renderTimetableEditor(timetableData);
+  } catch(e) {
+    document.getElementById('timetable-tbody').innerHTML =
+      '<tr><td colspan="7" class="empty-row">Could not load timetable.</td></tr>';
+  }
+}
+
+function renderTimetableEditor(periods) {
+  const tbody = document.getElementById('timetable-tbody');
+  if (periods.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-row">No periods. Click "+ Add Period".</td></tr>';
+    return;
+  }
+  tbody.innerHTML = periods.map((p, i) => `
+    <tr id="tt-row-${i}">
+      <td><input class="tt-input" type="number" value="${p.period}" id="tt-period-${i}" min="1" max="20" /></td>
+      <td><input class="tt-input" type="text"   value="${p.subject}" id="tt-subject-${i}" placeholder="e.g. Mathematics" /></td>
+      <td><input class="tt-input" type="text"   value="${p.teacher}" id="tt-teacher-${i}" placeholder="e.g. Maths_Sir" /></td>
+      <td><input class="tt-input" type="text"   value="${p.teacher_display || ''}" id="tt-teachdisplay-${i}" placeholder="e.g. Maths Sir" /></td>
+      <td><input class="tt-input" type="time"   value="${p.start_time}" id="tt-start-${i}" /></td>
+      <td><input class="tt-input" type="time"   value="${p.end_time}" id="tt-end-${i}" /></td>
+      <td><button class="btn btn-danger btn-xs" onclick="removePeriodRow(${i})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+function addPeriodRow() {
+  const n = timetableData.length;
+  timetableData.push({
+    period: n + 1, subject: '', teacher: '', teacher_display: '',
+    start_time: '', end_time: ''
+  });
+  renderTimetableEditor(timetableData);
+}
+
+function removePeriodRow(idx) {
+  timetableData.splice(idx, 1);
+  renderTimetableEditor(timetableData);
+}
+
+async function saveTimetable() {
+  // Read values from table
+  const rows = document.querySelectorAll('[id^="tt-row-"]');
+  const periods = [];
+  let valid = true;
+
+  rows.forEach((row, i) => {
+    const period      = parseInt(document.getElementById(`tt-period-${i}`)?.value);
+    const subject     = document.getElementById(`tt-subject-${i}`)?.value.trim();
+    const teacher     = document.getElementById(`tt-teacher-${i}`)?.value.trim();
+    const teachDisp   = document.getElementById(`tt-teachdisplay-${i}`)?.value.trim() || teacher;
+    const startTime   = document.getElementById(`tt-start-${i}`)?.value.trim();
+    const endTime     = document.getElementById(`tt-end-${i}`)?.value.trim();
+
+    if (!subject || !teacher) {
+      valid = false;
+      showToast(`Row ${i+1}: Subject and Teacher Key are required.`, 'error');
+      return;
+    }
+    periods.push({ period, subject, teacher, teacher_display: teachDisp, start_time: startTime, end_time: endTime });
+  });
+
+  if (!valid) return;
+
+  try {
+    const res  = await fetch('/timetable', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ periods })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, 'success');
+      timetableData = periods;
+    } else {
+      showToast(data.error || 'Failed to save timetable.', 'error');
+    }
+  } catch(e) {
+    showToast('Server error.', 'error');
+  }
+}
+
+// ─────────────────────────────────────────
+//  Settings
+// ─────────────────────────────────────────
+function confirmClearHistory() {
+  showConfirm('Clear All History',
+    'This will permanently delete ALL class history records. This cannot be undone.',
+    async () => {
+      try {
+        const res  = await fetch('/history/clear', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+        } else {
+          showToast(data.error, 'error');
+        }
+      } catch(e) {
+        showToast('Server error.', 'error');
+      }
+    });
+}
+
+async function checkHealth() {
+  try {
+    const res  = await fetch('/health');
+    const data = await res.json();
+    showToast(`System OK — ${data.timestamp}`, 'success');
+  } catch(e) {
+    showToast('Server not responding.', 'error');
+  }
+}
+
+// ─────────────────────────────────────────
+//  Modals
+// ─────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+let _confirmCallback = null;
+function showConfirm(title, message, callback) {
+  document.getElementById('confirm-title').textContent   = title;
+  document.getElementById('confirm-message').textContent = message;
+  _confirmCallback = callback;
+  openModal('confirm-modal');
+}
+document.getElementById('confirm-ok-btn').addEventListener('click', () => {
+  closeModal('confirm-modal');
+  if (_confirmCallback) _confirmCallback();
+  _confirmCallback = null;
+});
+
+// ─────────────────────────────────────────
+//  Toast Notifications
+// ─────────────────────────────────────────
+function showToast(message, type = 'info', duration = 3500) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  const icons = { success:'✓', error:'✕', warning:'⚠', info:'ℹ' };
+  toast.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ'}</span>
+                     <span class="toast-msg">${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, duration);
+}
+
+// ─────────────────────────────────────────
+//  Utility
+// ─────────────────────────────────────────
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+function setDisplay(id, visible) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = visible ? '' : 'none';
+}
+
+// Keyboard shortcut: ESC closes modal
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => {
+      m.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  }
+});
+</script>
+</body>
+</html>
